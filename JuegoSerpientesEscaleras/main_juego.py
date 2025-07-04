@@ -1,12 +1,11 @@
 import pygame
 import random
 from copy import deepcopy
-
 from funciones_pygame import *
 from reglas_pygame import *
 from preguntas import *
-
 from config_trivia import *
+
 #CASILLEROS KEYS
 clave1 = "casillero_1"
 clave2 = "casillero_2"
@@ -21,9 +20,6 @@ random.shuffle(preguntas_copia)
 indice_pregunta = 0                         # elemento que va a servir para recorrer la lista de preguntas
 incremento_pregunta = 1
 pregunta = ""
-respuesta_a = ""
-respuesta_b = ""
-respuesta_c = ""
 
 # INICIALIZAR PYGAME
 pygame.init()
@@ -61,8 +57,8 @@ botones_fuente = pygame.font.Font(FUENTE, 20)   # FUENTE para los textos adentro
 fuente_titulos = pygame.font.Font(FUENTE, 30)   # FUENTE para los titulos de las pantallas
 fuente_textos = pygame.font.Font(FUENTE, 16)    # FUENTE para los textos de las reglas
 fuente_preguntas = pygame.font.Font(FUENTE, 15) # Fuente para las preguntas del juego
-fuente_opciones = pygame.font.Font(FUENTE, 14)
-fuente_inicio = pygame.font.Font(FUENTE, 25)
+fuente_opciones = pygame.font.Font(FUENTE, 14)  # FUENTE para las opciones de Preguntas
+fuente_inicio = pygame.font.Font(FUENTE, 25)    # FUENTE para el inicio
 
 # BOTONES NORMALES
 rect_score = pygame.Rect(CORD_BOTON["boton_score"]["X"],CORD_BOTON["boton_score"]["Y"], TAMANIO_BOTON["ancho"], TAMANIO_BOTON["alto"])
@@ -103,8 +99,6 @@ jugador_rect = pygame.Rect(300, 280, 390, 50)
 # FICHA JUGADOR POSICION INICIAL (15) = (130, 270 )
 posicion_jugador = POSICION_INICIAL
 ficha_rect = pygame.Rect(CORDS_CASILLEROS_TABLERO[posicion_jugador][0], CORDS_CASILLEROS_TABLERO[posicion_jugador][1], TAMANIO_FICHA["ancho"], TAMANIO_FICHA["alto"])
-ficha_rect.x = CORDS_CASILLEROS_TABLERO[posicion_jugador][0]
-ficha_rect.y = CORDS_CASILLEROS_TABLERO[posicion_jugador][1]
 
 casilleros_movidos = 0
 informe_jugador1 = ""
@@ -135,13 +129,12 @@ ordenar_lista_puntajes(lista_puntajes)
 
 #SONIDO 
 pygame.mixer.init()
-volumen = 0.12
 sonido_fondo = pygame.mixer.Sound("./JuegoSerpientesEscaleras/A Funny Soul.mp3")
 sonido_correcto = pygame.mixer.Sound("./JuegoSerpientesEscaleras/Correcto.mp3")
-sonido_correcto.set_volume(0.11)
+sonido_correcto.set_volume(VOLUMEN_CORRECTO_INCORRECTO)
 sonido_incorrecto = pygame.mixer.Sound("./JuegoSerpientesEscaleras/incorrecto.mp3")
-sonido_incorrecto.set_volume(0.10)
-sonido_fondo.set_volume(volumen)
+sonido_incorrecto.set_volume(VOLUMEN_CORRECTO_INCORRECTO)
+sonido_fondo.set_volume(VOLUMEN_MUSICA)
 sonido_fondo.play(-1)
 # BUCLE PRINCIPAL
 while flag_correr:
@@ -150,11 +143,8 @@ while flag_correr:
         if evento.type == pygame.QUIT:                          # ESTE EVENTO FINALIZA EL PROGRAMA SI EL USUARIO TOCA X
             flag_correr = False
 
-        if evento.type == pygame.MOUSEMOTION:
-            print(evento.pos)
-
         if evento.type == pygame.MOUSEBUTTONDOWN:
-
+#-----------------------------------------------------------------------------------------------------------------------------------------------
             if pantalla_inicio:                                 # EVENTOS DE MOUSE EN PANTALLA INICIO
                 if rect_salir.collidepoint(evento.pos):
                     flag_correr = False                         # Cerrar el juego si se hace clic en el botón Salir
@@ -170,17 +160,17 @@ while flag_correr:
                 elif rect_info.collidepoint(evento.pos):    
                     pantalla_inicio = False
                     pantalla_info = True
-            
+#------------------------------------------------------------------------------------------------------------------------------------------------            
             elif pantalla_info:                                  # EVENTOS DE MOUSE EN PANTALLA INFO
                 if rect_atras.collidepoint(evento.pos):
                     pantalla_inicio = True
                     pantalla_info = False
-            
+#------------------------------------------------------------------------------------------------------------------------------------------------            
             elif pantalla_score:
                 if rect_atras.collidepoint(evento.pos):          # EVENTOS DE MOUSE EN PANTALLA SCORE
                     pantalla_inicio = True
                     pantalla_score = False
-
+#------------------------------------------------------------------------------------------------------------------------------------------------
             elif pantalla_juego:                                 # EVENTOS DE MOUSE EN PANTALLA JUGAR
                 if rect_atras_game.collidepoint(evento.pos):
                     pantalla_inicio = True
@@ -190,7 +180,7 @@ while flag_correr:
                     if jugador.strip() != "":
                         pantalla_juego = False
                         empezar_juego = True
-            
+#------------------------------------------------------------------------------------------------------------------------------------------------            
             if empezar_juego:                                               # EVENTOS DE MOUSE EN PANTALLA DEL JUEGO EMPEZADO
                 if fin_juego == False:
                     if rect_terminar.collidepoint(evento.pos):
@@ -209,9 +199,9 @@ while flag_correr:
                             respuesta = "c"
                             mostrar_resultado = True
                 else:
-                    if rect_atras.collidepoint(evento.pos):
+                    if rect_atras.collidepoint(evento.pos):             # Boton de salir al finalizar el juego
                         flag_correr = False
-        
+#------------------------------------------------------------------------------------------------------------------------------------------------        
         if fin_juego == False:                                                              # EVENTO DE TIEMPO (PREGUNTAS)
             if evento.type == pygame.USEREVENT:            
                 if evento.type == timer_segundos_preguntas and empezar_juego:
@@ -240,7 +230,7 @@ while flag_correr:
                             segs_result = "3"
                             if fin_juego_pendiente:
                                 fin_juego = True                                                   
-
+#------------------------------------------------------------------------------------------------------------------------------------------------
         if evento.type == pygame.KEYDOWN:                        # EVENTOS DE TECLADO EN PANTALLA JUGAR
             if pantalla_juego:
                 if evento.key == pygame.K_BACKSPACE:
@@ -266,8 +256,7 @@ while flag_correr:
     elif pantalla_info:      
         pantalla.blit(imagen_fondo, CORD_IMAGEN_FONDO) # FUNDE LA IMAGEN DE FONDO  
         dibujar_boton(pantalla, rect_atras, COLOR_AMARILLO, texto_atras, COLOR_NEGRO, botones_fuente)  #DIBUJAR BOTON ATRAS
-        titulo_info_render = fuente_titulos.render(titulo_info, True, COLOR_BLANCO)         # renderiza el titulo de la pantalla info
-        pantalla.blit(titulo_info_render, CORD_TITULO_INFO)                                        # funde el titulo
+        textos_sueltos(pantalla, fuente_titulos, COLOR_BLANCO, CORD_TITULO_INFO, titulo_info)                       # renderiza y funde el titulo
         listar_reglas(pantalla, LISTA_REGLAS, fuente_textos, COLOR_BLANCO)                   # renderiza las reglas y las dibuja
 
 # ---------------------------------------
@@ -277,27 +266,20 @@ while flag_correr:
     elif pantalla_score:
         pantalla.blit(imagen_fondo, CORD_IMAGEN_FONDO)
         dibujar_boton(pantalla,rect_atras, COLOR_AMARILLO, texto_atras, COLOR_NEGRO, botones_fuente)
-        titulo_score_render = fuente_titulos.render(titulo_score, True, COLOR_BLANCO)       #renderiza el titulo Score
-        pantalla.blit(titulo_score_render, CORD_TITULO_SCORE)                               
-        mostrar_lista_score(pantalla, lista_puntajes, botones_fuente, COLOR_AZUL)           # renderiza la lista de scores y las dibuja
+        textos_sueltos(pantalla, fuente_titulos, COLOR_BLANCO, CORD_TITULO_SCORE, titulo_score)        # renderiza y dibuja el titulo "SCORE"                             
+        mostrar_top(pantalla, lista_puntajes, botones_fuente, COLOR_AZUL, LIMITE_SCORE_PANTALLA, CORD_SCORE_PANTALLA["x"], CORD_SCORE_PANTALLA["y"])           # renderiza la lista de scores y las dibuja
 
 # ---------------------------------------
 #    PANTALLA Juego (Ingresar usuario)               
 # ---------------------------------------
 
     elif pantalla_juego:
-        pantalla.blit(imagen_fondo, CORD_IMAGEN_FONDO)      # FUNDE LA IMAGEN DE FONDO
-        
-        titulo_juego_reder = fuente_titulos.render(titulo_juego, True, COLOR_BLANCO)        # Renderiza el titulo
-        pantalla.blit(titulo_juego_reder, CORD_TITULO_JUEGO)
-
-        texto_pedir_usuario_render = fuente_textos.render(texto_pedir_usuario, True, COLOR_NEGRO)       # renderiza el texto de pedir usuario
-        pantalla.blit(texto_pedir_usuario_render, CORD_PEDIR_USUARIO)
+        pantalla.blit(imagen_fondo, CORD_IMAGEN_FONDO)      # FUNDE LA IMAGEN DE FONDO      
+        textos_sueltos(pantalla, fuente_titulos, COLOR_BLANCO, CORD_TITULO_JUEGO, titulo_juego)         #renderiza y dibuja el titulo de la pantalla jugar
+        textos_sueltos(pantalla, fuente_textos, COLOR_NEGRO, CORD_PEDIR_USUARIO, texto_pedir_usuario)       #renderizza y dibuja el texto para pedir usuario al jugador
 
         pygame.draw.rect(pantalla, COLOR_BLANCO, jugador_rect, 2)                           # dibuja un rectangulo sin relleno donde pareceran las letras que presione el usuario
-        jugador_renderizado = fuente_textos.render(jugador, True, COLOR_NEGRO)          # renderiza las teclas que presiona el usuario
-        texto_jugador_rect = jugador_renderizado.get_rect(center = jugador_rect.center)         # Obtiene el Rect del texto que ingresa y lo centra en el Rect principal
-        pantalla.blit(jugador_renderizado, texto_jugador_rect)                              # funde al texto renderizado con el rect que se obtuvo
+        texto_centrado(pantalla, fuente_textos, COLOR_NEGRO, jugador_rect, jugador)         # dibuja centrado en el rectangulo el nombre del jugador que va escribiendo en el teclado
 
         dibujar_boton(pantalla, rect_atras_game, COLOR_AMARILLO, texto_atras, COLOR_NEGRO, botones_fuente)      # dibuja boton de atras
         dibujar_boton(pantalla, rect_start, COLOR_AMARILLO, texto_start, COLOR_NEGRO, botones_fuente)           # dibuja boton de comenzar
@@ -310,7 +292,7 @@ while flag_correr:
         pantalla.blit(imagen_fondo, CORD_IMAGEN_FONDO)
         pantalla.blit(imagen_tablero, CORDENADA_TABLERO_IMG)                       # Funde la imagen del tablero
 
-        # Todo lo que muestra el juego mientras esta sin terminar de alguna forma
+        # Todo lo que muestra el juego mientras no haya terminado
         if fin_juego == False:
             dibujar_boton(pantalla, rect_terminar, COLOR_AZUL, texto_terminar, COLOR_BLANCO, botones_fuente)    # Dibuja boton de Terminar Juego, en caso de que no quiera seguir jugando
 
@@ -319,9 +301,7 @@ while flag_correr:
                 respuesta_a = preguntas_copia[indice_pregunta]["respuesta_a"]
                 respuesta_b = preguntas_copia[indice_pregunta]["respuesta_b"]
                 respuesta_c = preguntas_copia[indice_pregunta]["respuesta_c"]
-                color_opcion_a = COLOR_AMARILLO
-                color_opcion_b = COLOR_AMARILLO
-                color_opcion_c = COLOR_AMARILLO
+                color_opciones = {"a": COLOR_AMARILLO, "b": COLOR_AMARILLO, "c": COLOR_AMARILLO}
                 segundos = "15"
                 flag_tiempo = False                            
                 opcion_correcta = preguntas_copia[indice_pregunta]["respuesta_correcta"]
@@ -330,69 +310,34 @@ while flag_correr:
             if mostrar_resultado:                                                           
                 if respuesta != None:
                     resultado_respuesta = obtener_respuesta_correcta(preguntas_copia, indice_pregunta, respuesta)
-                    if resultado_respuesta:
-                        sonido_correcto.play()
-                    else:
-                        sonido_incorrecto.play()
-
-                    posicion_anterior = posicion_jugador
-                    posicion_jugador = mover_jugador(TABLERO, posicion_jugador, resultado_respuesta)               
-                    casilleros_movidos = posicion_jugador - posicion_anterior
-                    ficha_rect.x = CORDS_CASILLEROS_TABLERO[posicion_jugador][0]
-                    ficha_rect.y = CORDS_CASILLEROS_TABLERO[posicion_jugador][1]
-
-                    informe_jugador1, informe_jugador2 = mensaje_resultado(casilleros_movidos)
+                    sonido_respuesta(resultado_respuesta, sonido_correcto, sonido_incorrecto)
+                    
+                    posicion_jugador, informe_jugador1, informe_jugador2 = procesar_movimiento(TABLERO, resultado_respuesta, CORDS_CASILLEROS_TABLERO, posicion_jugador, ficha_rect, mover_jugador, actualizar_rect_ficha, mensaje_resultado)
 
                 elif segundos == "¡TIEMPO!":
                     sonido_incorrecto.play()
                     resultado_respuesta = False
-                    posicion_anterior = posicion_jugador
-                    posicion_jugador = mover_jugador(TABLERO, posicion_jugador, resultado_respuesta)
-                    casilleros_movidos = posicion_jugador - posicion_anterior
-                    ficha_rect.x = CORDS_CASILLEROS_TABLERO[posicion_jugador][0]
-                    ficha_rect.y = CORDS_CASILLEROS_TABLERO[posicion_jugador][1]
-                    
-                    informe_jugador1, informe_jugador2 = mensaje_resultado(casilleros_movidos)
+                    posicion_jugador, informe_jugador1, informe_jugador2 = procesar_movimiento(TABLERO, resultado_respuesta, CORDS_CASILLEROS_TABLERO, posicion_jugador, ficha_rect, mover_jugador, actualizar_rect_ficha, mensaje_resultado)
 
                     segundos = "15"
-               
-                if opcion_correcta == "a":
-                    color_opcion_a = COLOR_VERDE
-                elif opcion_correcta == "b":
-                    color_opcion_b = COLOR_VERDE
-                elif opcion_correcta == "c":
-                    color_opcion_c = COLOR_VERDE
 
-                if respuesta != opcion_correcta:
-                    if respuesta == "a":
-                        color_opcion_a = COLOR_ROJO
-                    elif respuesta == "b":
-                        color_opcion_b = COLOR_ROJO
-                    elif respuesta == "c":
-                        color_opcion_c = COLOR_ROJO
-                           
-                informe_jugador1_render = botones_fuente.render(informe_jugador1, True, COLOR_NEGRO)
-                informe_jugador2_render = fuente_opciones.render(informe_jugador2, True, COLOR_NEGRO)
-                texto_informe1_rect = informe_jugador1_render.get_rect(center = rect_informe1.center)
-                texto_informe2_rect = informe_jugador2_render.get_rect(center = rect_informe2.center)
-                pantalla.blit(informe_jugador1_render, texto_informe1_rect)
-                pantalla.blit(informe_jugador2_render, texto_informe2_rect)
+                colorear_correcta(opcion_correcta, color_opciones, COLOR_VERDE)               
+                colorear_incorrecta(respuesta, color_opciones, COLOR_ROJO, opcion_correcta)
+                texto_centrado(pantalla, botones_fuente, COLOR_NEGRO, rect_informe1, informe_jugador1)
+                texto_centrado(pantalla, fuente_opciones, COLOR_NEGRO, rect_informe2, informe_jugador2)
 
-            respuesta = None
+                respuesta = None
+            textos_sueltos(pantalla, fuente_preguntas, COLOR_NEGRO, CORD_PREGUNTAS, pregunta)                       # Renderiza y dibuja la pregunta
 
-            pregunta_render = fuente_preguntas.render(pregunta, True, COLOR_NEGRO)
-            pantalla.blit(pregunta_render, CORD_PREGUNTAS)
-            dibujar_boton(pantalla, rect_opcion_a, color_opcion_a, respuesta_a, COLOR_NEGRO, fuente_opciones)
-            dibujar_boton(pantalla, rect_opcion_b, color_opcion_b, respuesta_b, COLOR_NEGRO, fuente_opciones)  
-            dibujar_boton(pantalla, rect_opcion_c, color_opcion_c, respuesta_c, COLOR_NEGRO, fuente_opciones)
+            dibujar_boton(pantalla, rect_opcion_a, color_opciones["a"], respuesta_a, COLOR_NEGRO, fuente_opciones)      # renderiza y dibuja las opciones
+            dibujar_boton(pantalla, rect_opcion_b, color_opciones["b"], respuesta_b, COLOR_NEGRO, fuente_opciones)  
+            dibujar_boton(pantalla, rect_opcion_c, color_opciones["c"], respuesta_c, COLOR_NEGRO, fuente_opciones)
 
             if flag_tiempo == False:
-                segundos_texto_render = fuente_titulos.render(str(segundos), True, COLOR_BLANCO)
-                rect_segundos_texto = segundos_texto_render.get_rect(center = tiempo_rect.center)
-                pantalla.blit(segundos_texto_render, rect_segundos_texto)
+                texto_centrado(pantalla, fuente_titulos, COLOR_BLANCO, tiempo_rect, segundos)                       # renderiza y dibuja el tiempo descontandose
             
             fin_juego_pendiente = fin_del_juego (posicion_jugador, indice_pregunta, preguntas_copia)            
-            texto_final = texto_fin(texto_final, posicion_jugador)
+            texto_final = texto_fin(texto_final, posicion_jugador)                                          
 
     # ---------------------------------------
     #   PANTALLA JUEGO FINALIZADO              
@@ -406,34 +351,28 @@ while flag_correr:
                 ordenar_lista_puntajes(lista_puntajes)               
                 score_flag = False
             
-            texto_final_reder = botones_fuente.render(texto_final, True, COLOR_BLANCO)
-            pantalla.blit(texto_final_reder, CORD_TEXTO_FINAL)
-            dibujar_boton(pantalla, rect_atras, COLOR_AMARILLO, texto_salir, COLOR_NEGRO, botones_fuente)
-            posicion_final_render = fuente_textos.render(posicion_final, True, COLOR_AZUL)
-            pantalla.blit(posicion_final_render, CORD_TEXTO_POSICION_FINAL)
+            textos_sueltos(pantalla, botones_fuente, COLOR_BLANCO, CORD_TEXTO_FINAL, texto_final)                   # renderiza el texto final una vez terminado el juego
+            dibujar_boton(pantalla, rect_atras, COLOR_AMARILLO, texto_salir, COLOR_NEGRO, botones_fuente)           # dibuja el boton salir
+            textos_sueltos(pantalla, fuente_textos, COLOR_AZUL, CORD_TEXTO_POSICION_FINAL, posicion_final)          # renderiza y dibuja la posicion final
 
             titulo_ranking_render = fuente_titulos.render(titulo_ranking, True, COLOR_NEGRO)
             rect_titulo = titulo_ranking_render.get_rect()
-            rect_titulo.centerx = rect_ranking.centerx
+            rect_titulo.centerx = rect_ranking.centerx                                                              # renderiza y dibuja el titulo "SCORE"
             rect_titulo.top = rect_ranking.top + 10
             pantalla.blit(titulo_ranking_render, rect_titulo)
-            mostrar_top(pantalla, lista_puntajes, fuente_opciones, COLOR_NEGRO)
+            mostrar_top(pantalla, lista_puntajes, fuente_opciones, COLOR_NEGRO, LIMITE_SCORE_FINAL, CORD_SCORE_FINAL["x"], CORD_SCORE_FINAL["y"])                                     # renderiza y dibuja los scores
        #-----------------------------------------------------------------------------------------------------------------------
         numero1_render = fuente_titulos.render(TEXTOS_CASILLEROS_NUM["numero_1"],True, COLOR_NEGRO)
         numero2_render = fuente_titulos.render(TEXTOS_CASILLEROS_NUM["numero_2"], True, COLOR_AZUL)
         numero3_render = fuente_titulos.render(TEXTOS_CASILLEROS_NUM["numero_3"], True, COLOR_ROJO)
-        meta_render = fuente_titulos.render(TEXTOS_CASILLEROS["meta"], True, COLOR_VERDE)
-        inicio_render = fuente_inicio.render(TEXTOS_CASILLEROS["inicio"], True, COLOR_NEGRO)
-        perder_render = fuente_textos.render(TEXTOS_CASILLEROS["perder"], True, COLOR_ROJO)
 
         dibujar_numero_en_tablero(pantalla, CASILLEROS_CON_NUMEROS, numero1_render, numero2_render, numero3_render, CORDS_CASILLEROS_TABLERO, clave1, clave2, clave3)
-        pantalla.blit(perder_render, CASILLEROS_CON_TEXTO["perder"])
-        pantalla.blit(inicio_render, CASILLEROS_CON_TEXTO["inicio"])
-        pantalla.blit(meta_render, CASILLEROS_CON_TEXTO["meta"])
-
-        pygame.draw.circle(pantalla, COLOR_ROJO, ficha_rect.center, RADIO_DE_FICHA)  
+        textos_sueltos(pantalla, fuente_textos, COLOR_ROJO, CASILLEROS_CON_TEXTO["perder"], TEXTOS_CASILLEROS["perder"])
+        textos_sueltos(pantalla, fuente_inicio, COLOR_NEGRO, CASILLEROS_CON_TEXTO["inicio"], TEXTOS_CASILLEROS["inicio"])
+        textos_sueltos(pantalla, fuente_titulos, COLOR_VERDE, CASILLEROS_CON_TEXTO["meta"], TEXTOS_CASILLEROS["meta"])
+        pygame.draw.circle(pantalla, COLOR_ROJO, ficha_rect.center, RADIO_DE_FICHA)                     # FICHA
 
     pygame.display.flip() # Actualizar pantalla
-    clock.tick(60)
+    clock.tick(FPS)
 sonido_fondo.stop()
 pygame.quit() # Cerrar Pygame al finalizar el bucle

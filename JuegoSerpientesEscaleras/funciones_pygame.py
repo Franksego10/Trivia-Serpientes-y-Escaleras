@@ -132,29 +132,6 @@ def ordenar_lista_puntajes(lista:list):
                 lista[j] = lista_aux
 
 
-# DIBUJAR TOP SCORE AL FINALIZAR EL JUEGO
-def mostrar_top(screen, lista:list, fuente, color:tuple):
-    """
-    Renderiza y dibuja una lista en la pantalla (Top score (1-5)).
-    Parametro 1: Surface
-    Parametro 2: Lista a mostrar
-    Parametro 3: Fuente
-    Parametro 3: Tuple (Color) para el texto
-    Sir Retorno
-    """
-    puntos = 1
-    nombres = 0
-    espacio = 40
-    x = 697
-    y = 219
-
-    for i in range(len(lista)):
-        if i == 5:
-            break
-        texto = f"{str(lista[i][nombres])} ---- {str(lista[i][puntos])}"
-        texto_render = fuente.render(texto, True, color)
-        screen.blit(texto_render, (x, y + i * espacio))
-
 # DIBUJAR LISTA DE REGLAS EN LA PANTALLA INFO
 def listar_reglas (screen, lista:list, fuente, color):
     """
@@ -173,8 +150,8 @@ def listar_reglas (screen, lista:list, fuente, color):
         screen.blit(texto_reglas_render, (x, y + i * espacio))
 
 
-# DIBUJAR RANKING SCORE (1-10) EN LA PANTALLA SCORE
-def mostrar_lista_score(screen, lista:list, fuente, color:tuple):
+# DIBUJAR RANKING SCORE EN LA PANTALLA SCORE
+def mostrar_top(screen, lista:list, fuente, color:tuple, limite: int, x:int, y:int):
     """
     Renderiza y dibuja una lista en la pantalla (Top score (1-10)).
     Parametro 1: Surface
@@ -186,11 +163,9 @@ def mostrar_lista_score(screen, lista:list, fuente, color:tuple):
     puntos = 1
     nombres = 0
     espacio = 40
-    x = 335
-    y = 140
 
     for i in range(len(lista)):
-        if i == 10:
+        if i == limite:
             break
         texto = f"{str(lista[i][nombres])} ---- {str(lista[i][puntos])}"
         texto_render = fuente.render(texto, True, color)
@@ -254,3 +229,43 @@ def texto_fin(texto:str, posicion:int)->str:
     elif posicion == ganador:
         texto = "¡Felicidades! ¡Has llegado a la META!"
     return texto
+
+def actualizar_rect_ficha(lista:list, posicion, ficha):
+    """
+    Modifica (x,y) del rect de la ficha. Segun la posicion del jugador verificando la lista de cordenadas
+    Parametro 1: lista (cordenadas)
+    Parametro 2: posicion del jugador(int)
+    No retorna nada
+    """
+    ficha.x = lista[posicion][0]
+    ficha.y = lista[posicion][1]
+
+def colorear_correcta(correcta:str, color:dict, colores:tuple):
+    color[correcta] = colores
+
+def colorear_incorrecta(opcion_escogida:str, color:dict, colores:tuple, correcta):
+    if opcion_escogida != correcta:
+        color[opcion_escogida] = colores
+
+def sonido_respuesta(resultado:bool, sonido_correcto, sonido_incorrecto):
+    if resultado:
+        sonido_correcto.play()
+    else:
+        sonido_incorrecto.play()
+
+def texto_centrado(screen, fuente, color, rect, texto):
+    texto_render = fuente.render(str(texto), True, color)
+    texto_rect = texto_render.get_rect(center=rect.center)
+    screen.blit(texto_render, texto_rect)
+
+def textos_sueltos(screen, fuente, color, cordenadas, texto):
+    texto_render = fuente.render(texto, True, color)
+    screen.blit(texto_render, cordenadas)
+
+def procesar_movimiento(tablero:list, resultado:bool, cordenadas_casilleros:list, posicion:int, ficha, funcion_mover:callable, actualizar_pos:callable, mensaje:callable):
+    posicion_anterior = posicion
+    posicion = funcion_mover(tablero, posicion, resultado)
+    casilleros_movidos = posicion - posicion_anterior
+    actualizar_pos(cordenadas_casilleros, posicion, ficha)
+    informe1, informe2 = mensaje(casilleros_movidos)
+    return posicion, informe1, informe2
